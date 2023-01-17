@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # Script to compile and run sudoku program
-rm -f sudoku
-gcc -Wall -Wextra sudoku.c -o sudoku
-./sudoku puzzle9-valid.txt
+rm -f sudoku.out
+gcc -Wall -Wextra src/sudoku.c -o sudoku.out -lm
+./sudoku.out tests/puzzle9-valid.txt
+./sudoku.out tests/puzzle2-valid.txt
+./sudoku.out tests/puzzle2-invalid.txt
+./sudoku.out tests/puzzle2-fill-valid.txt
 
 # to check for memory leaks, use
 # valgrind ./sudoku puzzle9-good.txt
