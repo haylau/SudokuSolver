@@ -3,3 +3,48 @@
 2 1 0 0
 0 0 0 0
 4 2 1 0
+
+first easy solve
+4
+3 0 0 0
+2 1 0 0
+0 0 0 0
+4 2 1 0
+solve row 4
+3 0 0 0
+2 1 0 0
+0 0 0 0
+4 2 1 3
+solve grid 1
+3 4 0 0
+2 1 0 0
+0 0 0 0
+4 2 1 3
+solve col 1, 2
+3 4 0 0
+2 1 0 0
+1 3 0 0
+4 2 1 3
+begin depth solve; 
+search for smallest subset (will find row 1 first of missing size2);
+make a legal 'guess' of row 1
+3 4 2 1
+2 1 0 0
+1 3 0 0
+4 2 1 3
+search for smallest subset (will find row 2 first of missing size2);
+make a legal 'guess' of row 2
+3 4 2 1
+2 1 3 4
+1 3 0 0
+4 2 1 3
+search for smallest subset (found missing size 1) --> repeat easy solve
+3 4 2 1
+2 1 3 4
+1 3 0 0
+4 2 1 3
+solve col 3, 4
+3 4 2 1
+2 1 3 4
+1 3 4 2
+4 2 1 3

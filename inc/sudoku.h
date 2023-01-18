@@ -54,6 +54,7 @@
 void* solveRow(void* args);
 void* solveCol(void* args);
 void* solveGrid(void* args);
+
 // threaded functions for solving
 void* checkRow(void* args);
 void* checkCol(void* args);
@@ -76,10 +77,6 @@ typedef struct checkpuzzle_t {
   int numMissing;
 } checkpuzzle_t;
 
-// helper functions
-inline int getGridIdx(int row, int col, int psize);
-inline bool isSolvable(missing_t* missingNums, int psize);
-
 typedef struct solvepuzzle_t {
   int idx;
   int psize;
@@ -87,6 +84,32 @@ typedef struct solvepuzzle_t {
   missing_t* missingNums;
 } solvepuzzle_t;
 
+typedef struct solvecell_t {
+  int row_n;
+  int col_n;
+  int grid_n;
+  int psize;
+  int** grid;
+  smallestSolve_t* small;
+} solvecell_t;
+
+enum subset { rows, cols, grids };
+
+typedef struct cell_t {
+  int row;
+  int col;
+} cell_t;
+
+typedef struct smallestSolve_t {
+  enum subset type;
+  int idx;
+} smallestSolve_t;
+
+// helper functions
+inline int getGridIdx(int row, int col, int psize);
+inline bool isSolvable(missing_t* missingNums, int psize);
+inline bool isComplete(missing_t* missingNums, int psize);
+smallestSolve_t* getSmallestSolve(missing_t* missingNums, int psize); // returns malloc
 
 // takes puzzle size and grid[][] representing sudoku puzzle
 // and tow booleans to be assigned: complete and valid.
@@ -99,6 +122,8 @@ typedef struct solvepuzzle_t {
 missing_t* checkPuzzle(int psize, int** grid, bool* complete, bool* valid);
 
 void solvePuzzle(missing_t* missingNums, int psize, int** grid);
+int* solveCell(solvecell_t* args); // returns malloc!
+cell_t* selectCell(smallestSolve_t* subset, int psize, int** grid); // returns malloc!
 
 // takes filename and pointer to grid[][]
 // returns size of Sudoku puzzle and fills grid
