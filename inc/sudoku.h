@@ -1,13 +1,13 @@
 /**
  * @file sudoku.h
  * @author Hayden Lauritzen (haydenlauritzen@gmail.com)
- * @date 2022-12-20
+ * @date 2023-1-16
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023
  *
  */
 
-#include <math.h>    // sqrt
+#include <math.h>    // sqrt; gcc requires the '-lm' option when compiling 
 #include <stdbool.h> // bool
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,15 +84,6 @@ typedef struct solvepuzzle_t {
   missing_t* missingNums;
 } solvepuzzle_t;
 
-typedef struct solvecell_t {
-  int row_n;
-  int col_n;
-  int grid_n;
-  int psize;
-  int** grid;
-  smallestSolve_t* small;
-} solvecell_t;
-
 enum subset { rows, cols, grids };
 
 typedef struct cell_t {
@@ -109,7 +100,8 @@ typedef struct smallestSolve_t {
 inline int getGridIdx(int row, int col, int psize);
 inline bool isSolvable(missing_t* missingNums, int psize);
 inline bool isComplete(missing_t* missingNums, int psize);
-smallestSolve_t* getSmallestSolve(missing_t* missingNums, int psize); // returns malloc
+void makeMove(missing_t* missingNums, int row, int col, int grids, int** grid, int num);
+void undoMove(missing_t* missingNums, int row, int col, int grids, int** grid);
 
 // takes puzzle size and grid[][] representing sudoku puzzle
 // and tow booleans to be assigned: complete and valid.
@@ -122,7 +114,8 @@ smallestSolve_t* getSmallestSolve(missing_t* missingNums, int psize); // returns
 missing_t* checkPuzzle(int psize, int** grid, bool* complete, bool* valid);
 
 void solvePuzzle(missing_t* missingNums, int psize, int** grid);
-int* solveCell(solvecell_t* args); // returns malloc!
+int* solveCell(int row_n, int col_n, int grid_n, int psize, int** grid); // returns malloc!
+smallestSolve_t* getSmallestSolve(missing_t* missingNums, int psize); // returns malloc
 cell_t* selectCell(smallestSolve_t* subset, int psize, int** grid); // returns malloc!
 
 // takes filename and pointer to grid[][]

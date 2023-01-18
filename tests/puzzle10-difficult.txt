@@ -11,20 +11,20 @@ first easy solve
 0 0 0 0
 4 2 1 0
 solve row 4
-3 0 0 0
-2 1 0 0
-0 0 0 0
-4 2 1 3
-solve grid 1
-3 4 0 0
-2 1 0 0
-0 0 0 0
-4 2 1 3
-solve col 1, 2
-3 4 0 0
-2 1 0 0
-1 3 0 0
-4 2 1 3
+3 0 0 0 
+2 1 0 0 
+0 0 0 0 
+4 2 1 3 
+solve col 1
+3 0 0 0 
+2 1 0 0 
+1 0 0 0 
+4 2 1 3 
+solve grid 1, 3
+3 4 0 0 
+2 1 0 0 
+1 3 0 0 
+4 2 1 3 
 begin depth solve; 
 search for smallest subset (will find row 1 first of missing size2);
 make a legal 'guess' of row 1

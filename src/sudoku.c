@@ -1,9 +1,9 @@
 /**
  * @file sudoku.c
  * @author Hayden Lauritzen (haydenlauritzen@gmail.com)
- * @date 2022-12-20
+ * @date 2023-1-16
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023
  *
  */
 
@@ -18,19 +18,19 @@ smallestSolve_t* getSmallestSolve(missing_t* missingNums, int psize) {
     smallestSolve_t* ret = (smallestSolve_t*)malloc(sizeof(smallestSolve_t));
     int smallest = __INT32_MAX__;
     for (int i = 0; i < psize; ++i) {
-        if (missingNums[i].rows < smallest) {
+        if (missingNums[i].rows > 1 && missingNums[i].rows < smallest) {
             ret->type = rows;
-            ret->idx = i;
+            ret->idx = i + 1;
             smallest = missingNums[i].rows;
         }
-        else if (missingNums[i].cols < smallest) {
+        else if (missingNums[i].cols > 1 && missingNums[i].cols < smallest) {
             ret->type = cols;
-            ret->idx = i;
+            ret->idx = i + 1;
             smallest = missingNums[i].cols;
         }
-        else if (missingNums[i].grids < smallest) {
+        else if (missingNums[i].grids > 1 && missingNums[i].grids < smallest) {
             ret->type = grids;
-            ret->idx = i;
+            ret->idx = i + 1;
             smallest = missingNums[i].grids;
         }
     }
@@ -45,18 +45,32 @@ bool isSolvable(missing_t* missingNums, int psize) {
     }
     return false;
 }
-bool isSolvable(missing_t* missingNums, int psize) {
+bool isComplete(missing_t* missingNums, int psize) {
     for (int i = 0; i < psize; ++i) {
         if (missingNums[i].rows > 0 || missingNums[i].cols > 0 || missingNums[i].grids > 0) {
-            return true;
+            return false;
         }
     }
-    return false;
+    return true;
+}
+
+void makeMove(missing_t* missingNums, int row, int col, int grids, int** grid, int num) {
+    grid[row][col] = num;
+    --(missingNums[row - 1].rows);
+    --(missingNums[col - 1].cols);
+    --(missingNums[grids - 1].grids);
+}
+
+void undoMove(missing_t* missingNums, int row, int col, int grids, int** grid) {
+    grid[row][col] = 0;
+    ++(missingNums[row - 1].rows);
+    ++(missingNums[col - 1].cols);
+    ++(missingNums[grids - 1].grids);
 }
 
 void* solveRow(void* args) {
     solvepuzzle_t* params = (solvepuzzle_t*)args;
-    bool* numCount = (bool*)calloc(params->psize, sizeof(bool)); // keep track of used nums
+    bool* numCount = (bool*)calloc(params->psize + 1, sizeof(bool)); // keep track of used nums
     int numIdx, missingNum;
     int row = params->idx;
     for (int col = 1; col <= params->psize; ++col) {
@@ -73,18 +87,15 @@ void* solveRow(void* args) {
     for (int i = 1; i <= params->psize; ++i) {
         if (!numCount[i]) missingNum = i;
     }
-    params->grid[row][numIdx] = missingNum;
-    // update missing_t
-    --(params->missingNums[row - 1].rows);
-    --(params->missingNums[numIdx - 1].cols);
-    --(params->missingNums[getGridIdx(row, numIdx, params->psize) - 1].grids);
+    // make move
+    makeMove(params->missingNums, row, numIdx, getGridIdx(row, numIdx, params->psize), params->grid, missingNum);
     free(numCount);
     return NULL;
 }
 
 void* solveCol(void* args) {
     solvepuzzle_t* params = (solvepuzzle_t*)args;
-    bool* numCount = (bool*)calloc(params->psize, sizeof(bool)); // keep track of used nums
+    bool* numCount = (bool*)calloc(params->psize + 1, sizeof(bool)); // keep track of used nums
     int numIdx, missingNum;
     int col = params->idx;
     for (int row = 1; row <= params->psize; ++row) {
@@ -101,17 +112,13 @@ void* solveCol(void* args) {
     for (int i = 1; i <= params->psize; ++i) {
         if (!numCount[i]) missingNum = i;
     }
-    params->grid[numIdx][col] = missingNum;
-    // update missing_t
-    --(params->missingNums[numIdx - 1].rows);
-    --(params->missingNums[col - 1].cols);
-    --(params->missingNums[getGridIdx(numIdx, col, params->psize) - 1].grids);
+    makeMove(params->missingNums, numIdx, col, getGridIdx(numIdx, col, params->psize), params->grid, missingNum);
     free(numCount);
     return NULL;
 }
 void* solveGrid(void* args) {
     solvepuzzle_t* params = (solvepuzzle_t*)args;
-    bool* numCount = (bool*)calloc(params->psize, sizeof(bool)); // keep track of used nums
+    bool* numCount = (bool*)calloc(params->psize + 1, sizeof(bool)); // keep track of used nums
     int rowIdx, colIdx, missingNum;
     int grid = params->idx;
     int gridSize = (int)floor(sqrt(params->psize));
@@ -136,82 +143,86 @@ void* solveGrid(void* args) {
     for (int i = 1; i <= params->psize; ++i) {
         if (!numCount[i]) missingNum = i;
     }
-    params->grid[rowIdx][colIdx] = missingNum;
-    // update missing_t
-    --(params->missingNums[rowIdx - 1].rows);
-    --(params->missingNums[colIdx - 1].cols);
-    --(params->missingNums[grid - 1].grids);
+    makeMove(params->missingNums, rowIdx, colIdx, grid, params->grid, missingNum);
     free(numCount);
     return NULL;
 }
 
 cell_t* selectCell(smallestSolve_t* subset, int psize, int** grid) {
     cell_t* cell = (cell_t*)malloc(sizeof(cell_t));
-    switch(subset->type) {
-        case rows : {
-            int row = subset->idx;
-            for(int col = 0; col < psize; ++col) {
-                if(grid[row][col] == 0) {
+    switch (subset->type) {
+    case rows: {
+        int row = subset->idx;
+        for (int col = 1; col <= psize; ++col) {
+            if (grid[row][col] == 0) {
+                cell->row = row;
+                cell->col = col;
+            }
+        }
+        break;
+    }
+    case cols: {
+        int col = subset->idx;
+        for (int row = 1; row <= psize; ++row) {
+            if (grid[row][col] == 0) {
+                cell->row = row;
+                cell->col = col;
+            }
+        }
+        break;
+    }
+    case grids: {
+        int grids = subset->idx;
+        int gridSize = (int)floor(sqrt(psize));
+        for (int i = 0; i < gridSize; ++i) {
+            // converts grid idx to grid inital row idx
+            int row = (((grids - 1) / gridSize) * gridSize + 1) + i;
+            for (int j = 0; j < gridSize; ++j) {
+                // converts grid idx to grid inital col idx
+                int col = (((grids - 1) % gridSize) * gridSize + 1) + j;
+                int num = grid[row][col];
+                if (num == 0) {
                     cell->row = row;
                     cell->row = col;
-                } 
+                }
             }
-            break;
         }
-        case cols : {
-            int col = subset->idx;
-            for(int row = 0; row < psize; ++row) {
-                if(grid[row][col] == 0) {
-                    cell->row = row;
-                    cell->row = col;
-                } 
-            }
-            break;
-        }
-        case grids : {
-            int row = subset->idx;
-            for(int col = 0; col < psize; ++col) {
-                if(grid[row][col] == 0) {
-                    cell->row = row;
-                    cell->row = col;
-                } 
-            }
-            break;
-        }
+        break;
+    }
     }
     return cell;
 }
 
-int* solveCell(solvecell_t* params) {
-    const int numSubsets;
-    bool* numCount = (bool*)calloc(params->psize, sizeof(bool)); // keep track of used nums
-    int* validNums = (int*)calloc(params->psize, sizeof(bool)); // keep track of used nums
+int* solveCell(int row_n, int col_n, int grid_n, int psize, int** grid) {
+    bool* numCount = (bool*)calloc(psize + 1, sizeof(bool)); // keep track of used nums
+    int* validNums = (int*)calloc(psize, sizeof(bool)); // keep track of used nums
     // check row and col
-    for (int i = 0; i < params->psize; ++i) {
-        int rowNum = params->grid[params->row_n][i];
-        if (numCount[rowNum]) numCount[rowNum] = true;
-        int colNum = params->grid[i][params->col_n];
-        if (numCount[colNum]) numCount[colNum] = true;
+    for (int i = 1; i <= psize; ++i) {
+        int rowNum = grid[row_n][i];
+        if (!numCount[rowNum]) numCount[rowNum] = true;
+        int colNum = grid[i][col_n];
+        if (!numCount[colNum]) numCount[colNum] = true;
     }
     // check grid
-    int gridSize = (int)floor(sqrt(params->psize));
+    int gridSize = (int)floor(sqrt(psize));
     for (int i = 0; i < gridSize; ++i) {
         // converts grid idx to grid inital row idx
-        int row = (((params->grid_n - 1) / gridSize) * gridSize + 1) + i;
+        int row = (((grid_n - 1) / gridSize) * gridSize + 1) + i;
         for (int j = 0; j < gridSize; ++j) {
             // converts grid idx to grid inital col idx
-            int col = (((params->grid_n - 1) % gridSize) * gridSize + 1) + j;
-            int gridNum = params->grid[row][col];
-            if (numCount[gridNum]) numCount[gridNum] = true;
+            int col = (((grid_n - 1) % gridSize) * gridSize + 1) + j;
+            int gridNum = grid[row][col];
+            if (!numCount[gridNum]) numCount[gridNum] = true;
         }
     }
     int j = 0;
-    for (int i = 1; i <= params->psize; ++i) {
+    for (int i = 1; i <= psize; ++i) {
         if (!numCount[i]) {
             validNums[j] = i;
             ++j;
         }
     }
+    validNums[j] = 0;
     free(numCount);
     return validNums;
 }
@@ -233,6 +244,7 @@ void solvePuzzle(missing_t* missingNums, int psize, int** grid) {
                 pthread_create(&solveThreads[i], NULL, solveRow, &args[i]);
             }
         }
+
         // join row threads
         for (int i = 0; i < psize; ++i) {
             if (working[i]) {
@@ -279,23 +291,40 @@ void solvePuzzle(missing_t* missingNums, int psize, int** grid) {
         }
         free(working);
     }
+
     // no more easy solves left, check if complete
     if (!isComplete(missingNums, psize)) {
         // puzzle is not complete, find smallest start location
-        smallestSolve_t* small = getSmallestSolve(missingNums, psize);
+        smallestSolve_t* subset = getSmallestSolve(missingNums, psize);
         // select a cell in the smallset subset to guess
-        // get 
-        // make move
+        cell_t* cell = selectCell(subset, psize, grid);
+        // get legal moves
+        int gridIdx = getGridIdx(cell->row, cell->col, psize);
+        int* moves = solveCell(cell->row, cell->col, gridIdx, psize, grid);
+        int i = 0;
+        while (moves != 0) {
+            // make move; this will decrease the smallest subset's missing numbers
+            makeMove(missingNums, cell->row, cell->col, gridIdx, grid, moves[i]);
 
-        // undo move
-        // solveCell()
+            // increase depth
+            solvePuzzle(missingNums, psize, grid);
+
+            // check if puzzle was solved
+            if (isComplete) break;
+
+            // undo move if puzzle was illegal
+            undoMove(missingNums, cell->row, cell->col, gridIdx, grid);
+        }
+        free(subset);
+        free(cell);
+        free(moves);
     }
 }
 
 void* checkRow(void* args) {
     checkpuzzle_t* params = (checkpuzzle_t*)args;
     // keep track of used nums
-    bool* numCount = (bool*)calloc(params->psize, sizeof(bool));
+    bool* numCount = (bool*)calloc(params->psize + 1, sizeof(bool));
     for (int col = 1; col <= params->psize; ++col) {
         int num = params->grid[params->idx][col];
         if (num == 0) {
@@ -319,7 +348,7 @@ void* checkRow(void* args) {
 };
 void* checkCol(void* args) {
     checkpuzzle_t* params = (checkpuzzle_t*)args;
-    bool* numCount = (bool*)calloc(params->psize, sizeof(bool)); // keep track of used nums
+    bool* numCount = (bool*)calloc(params->psize + 1, sizeof(bool)); // keep track of used nums
     for (int row = 1; row <= params->psize; ++row) {
         int num = params->grid[row][params->idx];
         if (num == 0) {
@@ -342,7 +371,7 @@ void* checkCol(void* args) {
 };
 void* checkGrid(void* args) {
     checkpuzzle_t* params = (checkpuzzle_t*)args;
-    bool* numCount = (bool*)calloc(params->psize, sizeof(bool)); // keep track of used nums
+    bool* numCount = (bool*)calloc(params->psize + 1, sizeof(bool)); // keep track of used nums
     int gridSize = (int)floor(sqrt(params->psize));
     for (int i = 0; i < gridSize; ++i) {
         // converts grid idx to grid inital row idx
@@ -489,7 +518,8 @@ int main(int argc, char** argv) {
         printf(valid ? "true\n" : "false\n");
     }
     else if (valid) {
-        printf("Attempting Solve.\n");
+        printf("Attempting Solve of:\n");
+        printSudokuPuzzle(sudokuSize, grid);
         solvePuzzle(missing, sudokuSize, grid);
     }
     printSudokuPuzzle(sudokuSize, grid);
