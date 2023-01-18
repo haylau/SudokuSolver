@@ -3,11 +3,11 @@
 # Script to compile and run sudoku program
 rm -f bin/sudoku.out
 gcc -Wall -Wextra src/sudoku.c -o bin/sudoku.out -lm
-./sudoku.out tests/puzzle9-valid.txt
-./sudoku.out tests/puzzle2-valid.txt
-./sudoku.out tests/puzzle2-invalid.txt
-./sudoku.out tests/puzzle2-fill-valid.txt
-./sudoku.out tests/puzzle-hard.txt
+./bin/sudoku.out tests/puzzle9-valid.txt
+./bin/sudoku.out tests/puzzle2-valid.txt
+./bin/sudoku.out tests/puzzle2-invalid.txt
+./bin/sudoku.out tests/puzzle2-fill-valid.txt
+./bin/sudoku.out tests/puzzle-hard.txt
 
 # to check for memory leaks, use
 # valgrind ./sudoku puzzle9-good.txt
