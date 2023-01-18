@@ -310,7 +310,7 @@ void solvePuzzle(missing_t* missingNums, int psize, int** grid) {
             solvePuzzle(missingNums, psize, grid);
 
             // check if puzzle was solved
-            if (isComplete) break;
+            if (isComplete(missingNums, psize)) break;
 
             // undo move if puzzle was illegal
             undoMove(missingNums, cell->row, cell->col, gridIdx, grid);
