@@ -8,3 +8,4 @@ valgrind ./bin/sudoku.out tests/puzzle-hard.txt -s --leak-check=full
 valgrind ./bin/sudoku.out tests/puzzle-hard2.txt -s --leak-check=full
 valgrind ./bin/sudoku.out tests/puzzle-hard3.txt -s --leak-check=full
 valgrind ./bin/sudoku.out tests/puzzle-hard4.txt -s --leak-check=full
+valgrind ./bin/sudoku.out tests/puzzle-invalid-hard4.txt -s --leak-check=full

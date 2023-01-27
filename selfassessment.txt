@@ -2,12 +2,10 @@
 Compiled with:
 - gcc -Wall -Wextra -o sudoku.out sudoku.c -lm -pthread
 
-tested with:
-./sudoku.out puzzle9-valid.txt
-./sudoku.out puzzle2-valid.txt
-./sudoku.out puzzle2-invalid.txt
-./sudoku.out puzzle2-fill-valid.txt
-./sudoku.out puzzle-hard.txt
+tested:
+- complete & valid
+- complete & !valid
+- !complete 
 
 - Can verify whether it is valid or not - 10/10
 - Starts/joins multiple threads to speedup operation - 5/5

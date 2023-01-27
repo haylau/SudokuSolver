@@ -325,6 +325,7 @@ void solvePuzzle(missing_t* missingNums, int psize, int** grid) {
         int gridIdx = getGridIdx(cell->row, cell->col, psize);
         int* moves = solveCell(cell->row, cell->col, gridIdx, psize, grid);
         int i = 0;
+        bool solved = false;
         while (moves[i] != 0) {
             // make move; this will decrease the smallest subset's missing numbers
             savedPos_t* savedPos = savePos(grid, missingNums, psize);
@@ -343,6 +344,7 @@ void solvePuzzle(missing_t* missingNums, int psize, int** grid) {
                 }
                 free(savedPos->missing);
                 free(savedPos);
+                solved = true;
                 break; // puzzle is complete
             }
 
@@ -350,6 +352,7 @@ void solvePuzzle(missing_t* missingNums, int psize, int** grid) {
             undoMove(savedPos, grid, missingNums, psize);
             ++i;
         }
+        if(!solved) printf("Could not find a solution :(\nThis is as far as I got:\n");
         free(subset);
         free(cell);
         free(moves);
