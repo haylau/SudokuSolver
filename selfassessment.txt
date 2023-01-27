@@ -1,6 +1,6 @@
 
 Compiled with:
-- gcc -Wall -Wextra -lm -o sudoku.out src/sudoku.c 
+- gcc -Wall -Wextra -o sudoku.out sudoku.c -lm -pthread
 
 tested with:
 ./sudoku.out puzzle9-valid.txt

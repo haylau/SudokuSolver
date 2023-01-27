@@ -10,6 +10,7 @@ gcc -Wall -Wextra src/sudoku.c -o bin/sudoku.out -lm -pthread
 ./bin/sudoku.out tests/puzzle-hard.txt
 ./bin/sudoku.out tests/puzzle-hard2.txt
 ./bin/sudoku.out tests/puzzle-hard3.txt
+./bin/sudoku.out tests/puzzle-hard4.txt
 
 # to check for memory leaks, use
 # valgrind ./sudoku puzzle9-good.txt
