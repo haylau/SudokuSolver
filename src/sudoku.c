@@ -64,7 +64,7 @@ void makeMove(missing_t* missingNums, int row, int col, int grids, int** grid, i
 void undoMove(savedPos_t* saved, int** grid, missing_t* missingNums, int psize) {
     memcpy(missingNums, saved->missing, sizeof(missing_t) * (psize));
     for (int i = 1; i <= psize; ++i) {
-        memcpy(grid[i], saved->grid[i], sizeof(int*) * (psize + 1));
+        memcpy(grid[i], saved->grid[i], sizeof(int) * (psize + 1));
     }
     // free savedPos
     for (int i = 1; i <= psize; ++i) {
@@ -85,7 +85,7 @@ savedPos_t* savePos(int** grid, missing_t* missingNums, int psize) {
     saved->missing = (missing_t*)calloc(psize, sizeof(missing_t));
     memcpy(saved->missing, missingNums, sizeof(missing_t) * (psize));
     for (int i = 1; i <= psize; ++i) {
-        memcpy(saved->grid[i], grid[i], sizeof(int*) * (psize + 1));
+        memcpy(saved->grid[i], grid[i], sizeof(int) * (psize + 1));
     }
     return saved;
 }
@@ -316,8 +316,6 @@ void solvePuzzle(missing_t* missingNums, int psize, int** grid) {
     }
 
     // no more easy solves left, check if complete
-    printf("out of 100 confid\n");
-    printSudokuPuzzle(psize, grid);
     if (!isComplete(missingNums, psize)) {
         // puzzle is not complete, find smallest start location
         smallestSolve_t* subset = getSmallestSolve(missingNums, psize);
@@ -328,18 +326,12 @@ void solvePuzzle(missing_t* missingNums, int psize, int** grid) {
         int* moves = solveCell(cell->row, cell->col, gridIdx, psize, grid);
         int i = 0;
         while (moves[i] != 0) {
-            printf("before guess\n");
-            printSudokuPuzzle(psize, grid);
             // make move; this will decrease the smallest subset's missing numbers
             savedPos_t* savedPos = savePos(grid, missingNums, psize);
             makeMove(missingNums, cell->row, cell->col, gridIdx, grid, moves[i]);
-            printf("after guess\n");
-            printSudokuPuzzle(psize, grid);
 
             // increase depth, returns when no moves left; i.e. puzzle complete
             solvePuzzle(missingNums, psize, grid);
-            printf("best guess:\n");
-            printSudokuPuzzle(psize, grid);
 
             // check if puzzle is complete and/or valid
             bool complete;
@@ -351,14 +343,11 @@ void solvePuzzle(missing_t* missingNums, int psize, int** grid) {
                 }
                 free(savedPos->missing);
                 free(savedPos);
-                printf("solved!\n");
-                printSudokuPuzzle(psize, grid);
                 break; // puzzle is complete
             }
 
             // undo move if puzzle was illegal
             undoMove(savedPos, grid, missingNums, psize);
-            printf("undo move\n");
             ++i;
         }
         free(subset);
