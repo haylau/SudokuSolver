@@ -11,7 +11,8 @@
 #include <stdbool.h> // bool
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h> // threads
+#include <pthread.h> // threads; gcc requires the '-pthread' option when compiling
+#include <string.h> // memcpy()
 
  /**
  *  Board Structure
@@ -96,12 +97,18 @@ typedef struct smallestSolve_t {
   int idx;
 } smallestSolve_t;
 
+typedef struct savedPos_t {
+  int** grid;
+  missing_t* missing;
+} savedPos_t;
+
 // helper functions
 inline int getGridIdx(int row, int col, int psize);
 inline bool isSolvable(missing_t* missingNums, int psize);
 inline bool isComplete(missing_t* missingNums, int psize);
 void makeMove(missing_t* missingNums, int row, int col, int grids, int** grid, int num);
-void undoMove(missing_t* missingNums, int row, int col, int grids, int** grid);
+void undoMove(savedPos_t* savedPos, int** grid, missing_t* missingNums, int psize); // free's savedPos_t
+savedPos_t* savePos(int** grid, missing_t* missingNums, int psize); // returns malloc!
 
 // takes puzzle size and grid[][] representing sudoku puzzle
 // and tow booleans to be assigned: complete and valid.
