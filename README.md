@@ -47,7 +47,7 @@ Finds grid[2][3] as 3
 4 2 | 1 3
 ```
 
-The current version would not be able to solve a more complex puzzle, such as 
+The current version is able to solve all puzzles such as:
 ```
 3 0 | 0 0
 2 1 | 0 0
